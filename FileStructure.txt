@@ -1,0 +1,52 @@
+mern-google-maps/
+├── client/                     # React Frontend (Vite / CRA)
+│   ├── public/
+│   ├── src/
+│   │   ├── assets/             # Custom map marker icons, images, static assets
+│   │   ├── components/
+│   │   │   ├── common/         # Navbar, Loader, Sidebar, etc.
+│   │   │   └── map/            # Google Maps components
+│   │   │       ├── MapContainer.jsx   # Main Google Map wrapper
+│   │   │       ├── CustomMarker.jsx   # Custom map pins / markers
+│   │   │       ├── InfoWindow.jsx     # Popup card when a marker is clicked
+│   │   │       ├── SearchBox.jsx      # Google Places Autocomplete input
+│   │   │       └── RoutePolyline.jsx  # Directions / Navigation lines
+│   │   ├── pages/              # Main route views
+│   │   │   ├── Home.jsx
+│   │   │   └── MapView.jsx
+│   │   ├── hooks/              # Custom hooks for Maps & Geolocation
+│   │   │   ├── useGoogleMaps.js       # Loads Google Maps JS API script safely
+│   │   │   └── useCurrentLocation.js  # Browser Geolocation API wrapper
+│   │   ├── context/            # React Context for global state
+│   │   │   └── LocationContext.jsx    # User selected coordinates / places
+│   │   ├── services/           # Frontend API handlers
+│   │   │   ├── api.js                 # Axios instance pointing to Express server
+│   │   │   └── locationService.js     # API calls for places/saved locations
+│   │   ├── utils/              # Helper functions
+│   │   │   └── mapHelpers.js          # Distance math, bounds calculator
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── .env                    # VITE_GOOGLE_MAPS_API_KEY=your_client_key
+│   ├── package.json
+│   └── vite.config.js
+│
+└── server/                     # Express / Node.js Backend
+    ├── config/                 # DB and External API configuration
+    │   ├── db.js               # MongoDB connection (Mongoose)
+    │   └── googleMaps.js       # @googlemaps/google-maps-services-js configuration
+    ├── controllers/            # Request handlers
+    │   ├── locationController.js # Handles fetching, creating, and searching places
+    │   └── geocodeController.js  # Proxy for Geocoding / Places API calls
+    ├── models/                 # Mongoose Schemas
+    │   ├── User.js
+    │   └── Location.js         # Stores GeoJSON coordinates (type: "Point", coordinates: [lng, lat])
+    ├── routes/                 # Express API routes
+    │   ├── locationRoutes.js   # /api/locations
+    │   └── geocodeRoutes.js    # /api/geocode
+    ├── middleware/             # Auth and error middleware
+    │   └── errorHandler.js
+    ├── utils/                  # Helper utilities
+    │   └── geocode.js          # Server-side geocoding logic
+    ├── .env                    # MONGO_URI, GOOGLE_MAPS_SERVER_KEY, PORT
+    ├── package.json
+    └── server.js               # Server entry point
