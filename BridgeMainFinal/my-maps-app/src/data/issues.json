@@ -1,0 +1,42 @@
+[
+  {
+    "id": "issue-001",
+    "title": "Water leak in Block C corridor",
+    "category": "hostel",
+    "location": "Hostel Block C, 2nd floor",
+    "description": "Steady drip from the ceiling near room 214, been going for two days.",
+    "status": "in-progress",
+    "reportedBy": "Aarav · CSE 3rd year",
+    "createdAt": "2026-08-02T09:15:00+05:30"
+  },
+  {
+    "id": "issue-002",
+    "title": "Wi-Fi down in the library east wing",
+    "category": "wifi-it",
+    "location": "Central Library, East Wing",
+    "description": "Been unable to connect since Monday morning, affects the whole reading room.",
+    "status": "pending",
+    "reportedBy": "Simran · ECE 2nd year",
+    "createdAt": "2026-08-04T14:30:00+05:30"
+  },
+  {
+    "id": "issue-003",
+    "title": "Broken projector in Room 3B",
+    "category": "classrooms",
+    "location": "Academic Block, Room 3B",
+    "description": "Projector flickers and shuts off mid-lecture, needs a technician.",
+    "status": "resolved",
+    "reportedBy": "Manpreet · Mech 1st year",
+    "createdAt": "2026-07-29T11:00:00+05:30"
+  },
+  {
+    "id": "issue-004",
+    "title": "Dim lighting on the shuttle path",
+    "category": "safety",
+    "location": "Path between Gate 2 and Hostel Road",
+    "description": "Three lamp posts out — feels unsafe walking back after evening classes.",
+    "status": "pending",
+    "reportedBy": "Divya · BBA 2nd year",
+    "createdAt": "2026-08-05T20:10:00+05:30"
+  }
+]

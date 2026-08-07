@@ -1,0 +1,42 @@
+/* Layout shared by any page that needs the sidebar+map split view
+   (currently just the Services page). Page-specific content (hero bands,
+   forms, card feeds, tables) lives in pages.css. */
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--header-height));
+}
+
+/* ---- Split view: sidebar (search + list) beside the map ---- */
+.app-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(320px, 400px) 1fr;
+  min-height: 640px;
+}
+
+@media (max-width: 900px) {
+  .app-grid {
+    grid-template-columns: 1fr;
+    /* Let each stacked panel size to its own content instead of forcing
+       the 640px desktop split-view height, which left dead space below
+       a short result list on small screens. */
+    min-height: 0;
+  }
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  border-right: 1px solid var(--color-line);
+  min-height: 0;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--color-line);
+  }
+}
