@@ -7,29 +7,7 @@ reference design, wired up to the Bridge product spec in `Plan.MD`.
 ## Setup
 
 ```bash
-npm install
-```
-
-Add a Google Maps JavaScript API key (free tier is enough):
-
-1. In the [Google Cloud Console](https://console.cloud.google.com/apis/library), open
-   **APIs & Services → Library**, search **"Maps JavaScript API"**, and click **Enable**.
-   (Skip the marketing "solution" tiles on the Maps Platform landing page — none of them
-   *are* the API, they're guided tutorials. Enabling the API directly is all you need.)
-2. Create a key under **APIs & Services → Credentials**, and (recommended) restrict it to
-   your dev origin (`http://localhost:5173`).
-3. Paste it into `.env.local`:
-
-   ```
-   VITE_GOOGLE_MAPS_API_KEY=your_key_here
-   ```
-
-> **No key yet?** The app still runs. `MapContainer` detects the missing key and renders a
-> styled, to-scale fallback preview instead of the live map on the Services page.
-
-Then run it:
-
-```bash
+npm install      # Install the latest/Required Dependencies
 npm run dev      # local dev server
 npm run build    # production build → dist/
 npm run preview  # preview the production build
