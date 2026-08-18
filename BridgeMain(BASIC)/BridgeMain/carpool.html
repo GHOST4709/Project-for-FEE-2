@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bridge — Campus Carpool</title>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            if (localStorage.getItem('bridge_logged_in') !== 'true') {
+                window.location.replace('login.html');
+            }
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="rail" aria-hidden="true"></div>
+
+    <header class="site-header dashboard-header">
+        <a href="index.html" class="brand">
+            <span class="brand-mark">⚡</span>
+            <span class="brand-word">BRIDGE<em>.</em></span>
+        </a>
+        <div class="user-menu">
+            <a href="dashboard.html" class="btn btn-ghost btn-sm">← Back to Dashboard</a>
+            <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode">
+                <span id="theme-icon">🌙</span>
+                <span id="theme-label">Dark</span>
+            </button>
+            <div class="user-badge" id="user-badge" title="Alex Rivera">AR</div>
+            <button id="logout-btn" class="btn btn-ghost btn-sm">Log out</button>
+        </div>
+    </header>
+
+    <main class="carpool-container">
+        <!-- Page Title Header -->
+        <section class="carpool-head">
+            <p class="section-eyebrow">01 / CAMPUS RIDES</p>
+            <h1>Find or Offer a Ride</h1>
+            
+            <!-- Navigation Tabs -->
+            <div class="carpool-tabs" role="tablist">
+                <button class="tab-btn active" id="tab-find" onclick="switchCarpoolTab('find')">Find a Ride</button>
+                <button class="tab-btn" id="tab-offer" onclick="switchCarpoolTab('offer')">Offer a Ride</button>
+            </div>
+        </section>
+
+        <!-- Find a Ride Section -->
+        <div id="view-find" class="tab-content">
+            <!-- Search Filter Input Box -->
+            <div class="carpool-search-card">
+                <form id="carpool-search-form" class="search-grid" onsubmit="filterRides(event)">
+                    <div class="field-group">
+                        <label for="search-from">From</label>
+                        <div class="input-with-icon">
+                            <span class="icon">📍</span>
+                            <input type="text" id="search-from" placeholder="e.g. Chandigarh">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label for="search-to">To</label>
+                        <div class="input-with-icon">
+                            <span class="icon">🎓</span>
+                            <input type="text" id="search-to" placeholder="e.g. Campus North Gate">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label for="search-date">Date</label>
+                        <div class="input-with-icon">
+                            <span class="icon">📅</span>
+                            <input type="date" id="search-date" value="2026-08-18">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label for="search-time">Time</label>
+                        <div class="input-with-icon">
+                            <span class="icon">🕒</span>
+                            <input type="time" id="search-time" value="08:30">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary search-btn" aria-label="Search Rides">
+                        <span>🔍</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Dynamic Rides Container -->
+            <div id="rides-container" class="rides-grid"></div>
+        </div>
+
+        <!-- Offer a Ride Section -->
+        <div id="view-offer" class="tab-content" style="display: none;">
+            <div class="ticket offer-ticket">
+                <h2>Post a Ride Offer</h2>
+                <p class="ticket-sub">Help peers commute while sharing fuel costs</p>
+                <form id="offer-ride-form" onsubmit="handleOfferRide(event)">
+                    <div class="field">
+                        <label for="offer-pickup">Pickup Location</label>
+                        <input type="text" id="offer-pickup" placeholder="e.g. Sector 17, Chandigarh" required>
+                    </div>
+                    <div class="field">
+                        <label for="offer-drop">Drop Location</label>
+                        <input type="text" id="offer-drop" placeholder="e.g. Campus North Gate" required>
+                    </div>
+                    <div class="offer-row">
+                        <div class="field">
+                            <label for="offer-seats">Available Seats</label>
+                            <input type="number" id="offer-seats" min="1" max="6" value="2" required>
+                        </div>
+                        <div class="field">
+                            <label for="offer-price">Price per Seat (₹)</label>
+                            <input type="number" id="offer-price" min="0" value="40" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="offer-vehicle">Vehicle Type</label>
+                        <select id="offer-vehicle" required>
+                            <option value="Hatchback">Car (Hatchback)</option>
+                            <option value="Sedan">Car (Sedan/SUV)</option>
+                            <option value="Scooter">Scooter / Bike</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Publish Ride Offer</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>© 2026 Bridge Network. Connected Campus Experience.</p>
+        <p><a href="dashboard.html">← Back to Dashboard</a></p>
+    </footer>
+
+    <div id="toast" class="toast">Theme updated!</div>
+    <script src="script.js"></script>
+    <script>
+        // Default Mock Ride Database
+        const ridesDatabase = [
+            {
+                id: 1,
+                driverName: "Aarav M.",
+                driverDept: "Engineering Dept",
+                rating: "4.8",
+                avatar: "AM",
+                vehicle: "🚗 Hatchback",
+                from: "Sector 17, Chandigarh",
+                to: "Campus North Gate",
+                depTime: "08:00 AM",
+                arrTime: "08:45 AM",
+                seats: 2,
+                price: "₹50"
+            },
+            {
+                id: 2,
+                driverName: "Priya S.",
+                driverDept: "Design Dept",
+                rating: "4.9",
+                avatar: "PS",
+                vehicle: "🛵 Scooter",
+                from: "Mohali Phase 7",
+                to: "Campus South Gate",
+                depTime: "08:15 AM",
+                arrTime: "08:50 AM",
+                seats: 1,
+                price: "₹30"
+            },
+            {
+                id: 3,
+                driverName: "Rohan K.",
+                driverDept: "CS Dept",
+                rating: "4.7",
+                avatar: "RK",
+                vehicle: "🚘 Sedan",
+                from: "Zirakpur Square",
+                to: "Central Library",
+                depTime: "07:45 AM",
+                arrTime: "08:30 AM",
+                seats: 3,
+                price: "₹60"
+            }
+        ];
+
+        // Render Ride Cards
+        function renderRides(rides) {
+            const container = document.getElementById('rides-container');
+            container.innerHTML = '';
+
+            if (!rides || rides.length === 0) {
+                container.innerHTML = `
+                    <div class="no-rides-card">
+                        <span class="no-rides-icon">🚫</span>
+                        <h3>No Rides Available</h3>
+                        <p>No student drivers match your exact search location. Try clearing your filters or offering a ride yourself!</p>
+                        <button class="btn btn-ghost btn-sm" onclick="resetSearch()">Show All Rides</button>
+                    </div>
+                `;
+                return;
+            }
+
+            rides.forEach(ride => {
+                const card = document.createElement('article');
+                card.className = 'ride-card';
+                card.innerHTML = `
+                    <div class="ride-card-header">
+                        <div class="driver-info">
+                            <div class="driver-avatar ${ride.id % 2 === 0 ? 'alt-avatar' : ''}">${ride.avatar}</div>
+                            <div>
+                                <h3 class="driver-name">${ride.driverName}</h3>
+                                <p class="driver-meta">⭐ ${ride.rating} • ${ride.driverDept}</p>
+                            </div>
+                        </div>
+                        <span class="vehicle-badge">${ride.vehicle}</span>
+                    </div>
+
+                    <div class="route-timeline">
+                        <div class="stop-point start">
+                            <div class="point-dot"></div>
+                            <div class="point-details">
+                                <span class="location-name">${ride.from}</span>
+                                <span class="location-time">${ride.depTime}</span>
+                            </div>
+                        </div>
+                        <div class="timeline-line"></div>
+                        <div class="stop-point end">
+                            <div class="point-dot"></div>
+                            <div class="point-details">
+                                <span class="location-name">${ride.to}</span>
+                                <span class="location-time">${ride.arrTime}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ride-card-footer">
+                        <div class="ride-details-row">
+                            <span class="detail-item">💺 <strong>${ride.seats} seat${ride.seats > 1 ? 's' : ''}</strong> left</span>
+                            <span class="detail-item price-tag">💵 <strong>${ride.price}</strong></span>
+                        </div>
+                        <button class="btn btn-primary rsvp-ride-btn" onclick="requestRide(this, '${ride.driverName}')">Request Ride →</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Live Filtering Function
+        function filterRides(e) {
+            if(e) e.preventDefault();
+            const fromQuery = document.getElementById('search-from').value.toLowerCase().trim();
+            const toQuery = document.getElementById('search-to').value.toLowerCase().trim();
+
+            const filtered = ridesDatabase.filter(ride => {
+                const matchesFrom = !fromQuery || ride.from.toLowerCase().includes(fromQuery);
+                const matchesTo = !toQuery || ride.to.toLowerCase().includes(toQuery);
+                return matchesFrom && matchesTo;
+            });
+
+            renderRides(filtered);
+        }
+
+        function resetSearch() {
+            document.getElementById('search-from').value = '';
+            document.getElementById('search-to').value = '';
+            renderRides(ridesDatabase);
+        }
+
+        function switchCarpoolTab(tab) {
+            const findBtn = document.getElementById('tab-find');
+            const offerBtn = document.getElementById('tab-offer');
+            const findView = document.getElementById('view-find');
+            const offerView = document.getElementById('view-offer');
+
+            if (tab === 'find') {
+                findBtn.classList.add('active');
+                offerBtn.classList.remove('active');
+                findView.style.display = 'block';
+                offerView.style.display = 'none';
+            } else {
+                offerBtn.classList.add('active');
+                findBtn.classList.remove('active');
+                offerView.style.display = 'block';
+                findView.style.display = 'none';
+            }
+        }
+
+        function requestRide(btn, driverName) {
+            if (btn.classList.contains('requested')) {
+                btn.classList.remove('requested');
+                btn.textContent = 'Request Ride →';
+                showToast(`Request to ${driverName} cancelled`);
+            } else {
+                btn.classList.add('requested');
+                btn.textContent = 'Requested ✓';
+                showToast(`Ride requested with ${driverName}!`);
+            }
+        }
+
+        function handleOfferRide(e) {
+            e.preventDefault();
+            const pickup = document.getElementById('offer-pickup').value;
+            const drop = document.getElementById('offer-drop').value;
+            const seats = document.getElementById('offer-seats').value;
+            const price = document.getElementById('offer-price').value;
+            const vehicle = document.getElementById('offer-vehicle').value;
+
+            // Add new ride to memory
+            ridesDatabase.unshift({
+                id: Date.now(),
+                driverName: localStorage.getItem('bridge_user_name') || "Alex Rivera",
+                driverDept: "Your Dept",
+                rating: "5.0",
+                avatar: "AR",
+                vehicle: vehicle.includes('Scooter') ? '🛵 Scooter' : '🚗 ' + vehicle,
+                from: pickup,
+                to: drop,
+                depTime: "09:00 AM",
+                arrTime: "09:35 AM",
+                seats: parseInt(seats),
+                price: `₹${price}`
+            });
+
+            showToast('Ride offer published successfully!');
+            document.getElementById('offer-ride-form').reset();
+            
+            setTimeout(() => {
+                switchCarpoolTab('find');
+                renderRides(ridesDatabase);
+            }, 1000);
+        }
+
+        // Live search listeners
+        document.getElementById('search-from').addEventListener('input', () => filterRides());
+        document.getElementById('search-to').addEventListener('input', () => filterRides());
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            renderRides(ridesDatabase);
+        });
+    </script>
+</body>
+</html>

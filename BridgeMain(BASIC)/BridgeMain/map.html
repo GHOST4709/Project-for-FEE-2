@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bridge — Campus Map</title>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            if (localStorage.getItem('bridge_logged_in') !== 'true') {
+                window.location.replace('login.html');
+            }
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="rail" aria-hidden="true"></div>
+
+    <header class="site-header dashboard-header">
+        <a href="index.html" class="brand">
+            <span class="brand-mark">⚡</span>
+            <span class="brand-word">BRIDGE<em>.</em></span>
+        </a>
+        <div class="user-menu">
+            <a href="dashboard.html" class="btn btn-ghost btn-sm">← Back to Dashboard</a>
+            <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode">
+                <span id="theme-icon">🌙</span>
+                <span id="theme-label">Dark</span>
+            </button>
+            <div class="user-badge" id="user-badge" title="Alex Rivera">AR</div>
+            <button id="logout-btn" class="btn btn-ghost btn-sm">Log out</button>
+        </div>
+    </header>
+
+    <main class="map-shell">
+        <section class="map-head">
+            <p class="section-eyebrow">00 / LIVE MAP</p>
+            <h1>Every service, on one map.</h1>
+            <p class="hero-sub">Carpool pickups, PGs, thrift exchange points, and repair shops — pinned and searchable.</p>
+        </section>
+
+        <div class="map-toolbar">
+            <div class="map-search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="map-search" placeholder="Search by name or description..." oninput="renderList()">
+            </div>
+            <div class="pill-filters" id="map-category-pills">
+                <button class="pill-btn active" data-cat="all" onclick="selectCategory(this, 'all')">All (<span id="count-all">0</span>)</button>
+                <button class="pill-btn" data-cat="carpool" onclick="selectCategory(this, 'carpool')">Carpool</button>
+                <button class="pill-btn" data-cat="rooms" onclick="selectCategory(this, 'rooms')">Rooms & PG</button>
+                <button class="pill-btn" data-cat="thrift" onclick="selectCategory(this, 'thrift')">Thrift Exchange</button>
+                <button class="pill-btn" data-cat="fix" onclick="selectCategory(this, 'fix')">Tech Fix</button>
+            </div>
+        </div>
+
+        <div class="map-legend">
+            <span class="map-legend-item"><span class="map-legend-dot" style="background: var(--teal);"></span>Carpool</span>
+            <span class="map-legend-item"><span class="map-legend-dot" style="background: var(--amber);"></span>Rooms & PG</span>
+            <span class="map-legend-item"><span class="map-legend-dot" style="background: var(--rose);"></span>Thrift Exchange</span>
+            <span class="map-legend-item"><span class="map-legend-dot" style="background: var(--violet);"></span>Tech Fix</span>
+        </div>
+
+        <div class="map-layout">
+            <div id="map-list" class="map-list" aria-label="Nearby services"></div>
+
+            <div class="map-canvas-wrap">
+                <div id="map-canvas" class="map-canvas" role="presentation"></div>
+                <p id="map-loading" class="map-loading-state">Loading map…</p>
+
+                <div id="map-fallback" class="map-fallback"></div>
+
+                <div class="map-live-chip">
+                    <span class="map-live-dot"></span>
+                    <span id="map-live-count">0</span> pinned nearby
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>© 2026 Bridge Network. Connected Campus Experience.</p>
+        <p><a href="dashboard.html">← Back to Dashboard</a></p>
+    </footer>
+
+    <div id="toast" class="toast">Theme updated!</div>
+    <script src="script.js"></script>
+    <script src="map-config.js"></script>
+    <script>
+        // Fictional "Bridge University" campus, placed near the real
+        // Chandigarh / Mohali locations that carpool.html already
+        // references (Sector 17, Mohali Phase 7, Zirakpur) so the whole
+        // app shares one consistent geography.
+        const CAMPUS_CENTER = { lat: 30.7200, lng: 76.7500 };
+
+        const CATEGORY_META = {
+            carpool: { label: 'Carpool', hex: '#0d9488' },
+            rooms:   { label: 'Rooms & PG', hex: '#d97706' },
+            thrift:  { label: 'Thrift Exchange', hex: '#be5b6d' },
+            fix:     { label: 'Tech Fix', hex: '#6d5ba3' }
+        };
+
+        // Mock dataset — Part 1 is client-only, no backend. Thrift listings
+        // here are physical exchange points (a swap table, a book shelf),
+        // not individual items, since thrift.html's items themselves don't
+        // have a fixed campus location worth pinning.
+        const campusLocations = [
+            { id: 'c1', category: 'carpool', name: 'Sector 17, Chandigarh', description: 'Common carpool pickup point, matches the ride board on the Carpool page.', address: 'Sector 17, Chandigarh', lat: 30.7410, lng: 76.7828 },
+            { id: 'c2', category: 'carpool', name: 'Mohali Phase 7', description: 'Morning pickup spot for the Mohali route.', address: 'Phase 7, Mohali', lat: 30.7046, lng: 76.7179 },
+            { id: 'c3', category: 'carpool', name: 'Zirakpur Square', description: 'Evening drop point, 15 minutes from South Campus.', address: 'Zirakpur Square', lat: 30.6425, lng: 76.8173 },
+            { id: 'c4', category: 'carpool', name: 'Campus North Gate Pickup', description: 'On-campus meeting point for rides heading into the city.', address: 'North Gate, Bridge University', lat: 30.7235, lng: 76.7510 },
+
+            { id: 'r1', category: 'rooms', name: 'Student Haven PG', description: 'Boys-only PG, double sharing, Wi-Fi and meals included.', address: '1.2 km from North Campus', lat: 30.7280, lng: 76.7530 },
+            { id: 'r2', category: 'rooms', name: 'Elite Scholars Residence', description: 'Co-ed private rooms with gym and laundry.', address: '0.5 km from Main Gate', lat: 30.7175, lng: 76.7480 },
+            { id: 'r3', category: 'rooms', name: 'Campus View Hostel', description: 'Girls-only hostel, triple sharing, budget-friendly.', address: '2.5 km from South Campus', lat: 30.7000, lng: 76.7450 },
+            { id: 'r4', category: 'rooms', name: 'Budget Rooms Near West Gate', description: 'No-frills sharing rooms, cheapest option within walking distance.', address: 'Near West Gate', lat: 30.7192, lng: 76.7420 },
+
+            { id: 't1', category: 'thrift', name: 'Student Center Swap Table', description: 'Drop-off and pickup point for textbook and gear swaps posted on Campus Thrift.', address: 'Student Center, ground floor', lat: 30.7206, lng: 76.7503 },
+            { id: 't2', category: 'thrift', name: 'Library Book Exchange Shelf', description: 'Take a book, leave a book — informal exchange shelf by the entrance.', address: 'Central Library entrance', lat: 30.7211, lng: 76.7516 },
+            { id: 't3', category: 'thrift', name: 'Hostel Common Room Donation Box', description: 'For lab coats, chargers, and anything else worth a second life.', address: 'Hostel Block, common room', lat: 30.7275, lng: 76.7525 },
+
+            { id: 'f1', category: 'fix', name: 'The Digital Doctor', description: 'Laptop and data recovery specialists, Apple certified.', address: '0.2 miles from North Campus', lat: 30.7250, lng: 76.7515 },
+            { id: 'f2', category: 'fix', name: 'FixIt Fast', description: 'Phone screen and battery repairs, quick turnaround.', address: '0.5 miles from West Gate', lat: 30.7185, lng: 76.7415 },
+            { id: 'f3', category: 'fix', name: 'Campus Tech Hub', description: 'All-devices repair and software help, right in the Student Union.', address: 'On Campus (Student Union)', lat: 30.7205, lng: 76.7500 }
+        ];
+
+        // Light/dark map styling to match the site's own paper/slate theme
+        // instead of default Google styling.
+        const MAP_STYLE_LIGHT = [
+            { elementType: 'geometry', stylers: [{ color: '#f1f5f9' }] },
+            { elementType: 'labels.text.fill', stylers: [{ color: '#64748b' }] },
+            { elementType: 'labels.text.stroke', stylers: [{ color: '#f8fafc' }] },
+            { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#f8fafc' }] },
+            { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#e2e8f0' }] },
+            { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#ccfbf1' }] },
+            { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
+            { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#e2e8f0' }] },
+            { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#fef3c7' }] },
+            { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#a7d8d1' }] }
+        ];
+
+        const MAP_STYLE_DARK = [
+            { elementType: 'geometry', stylers: [{ color: '#111827' }] },
+            { elementType: 'labels.text.fill', stylers: [{ color: '#94a3b8' }] },
+            { elementType: 'labels.text.stroke', stylers: [{ color: '#0b0f19' }] },
+            { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#0b0f19' }] },
+            { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#1e293b' }] },
+            { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#134e4a' }] },
+            { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#1e293b' }] },
+            { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#334155' }] },
+            { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#334155' }] },
+            { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#1e293b' }] },
+            { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0c2b28' }] }
+        ];
+
+        let map = null;
+        let infoWindow = null;
+        const markers = new Map();
+        let activeCategory = 'all';
+        let activeLocationId = null;
+
+        function filteredLocations() {
+            const query = document.getElementById('map-search').value.toLowerCase().trim();
+            return campusLocations.filter((loc) => {
+                const matchesCat = activeCategory === 'all' || loc.category === activeCategory;
+                const matchesQuery = !query || loc.name.toLowerCase().includes(query) || loc.description.toLowerCase().includes(query);
+                return matchesCat && matchesQuery;
+            });
+        }
+
+        function renderList() {
+            const list = filteredLocations();
+            const container = document.getElementById('map-list');
+            container.innerHTML = '';
+            document.getElementById('map-live-count').textContent = list.length;
+            document.getElementById('count-all').textContent = campusLocations.length;
+
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div class="no-rides-card">
+                        <span class="no-rides-icon">🗺️</span>
+                        <h3>No matches</h3>
+                        <p>Try a different category or clear your search.</p>
+                    </div>
+                `;
+            } else {
+                list.forEach((loc) => {
+                    const meta = CATEGORY_META[loc.category];
+                    const card = document.createElement('article');
+                    card.className = 'map-list-card' + (loc.id === activeLocationId ? ' is-active' : '');
+                    card.tabIndex = 0;
+                    card.innerHTML = `
+                        <div class="map-list-card__top">
+                            <span class="map-list-card__dot" style="background: ${meta.hex};"></span>
+                            <div>
+                                <h3>${loc.name}</h3>
+                                <p class="map-list-card__cat">${meta.label}</p>
+                            </div>
+                        </div>
+                        <p class="map-list-card__desc">${loc.description}</p>
+                        <p class="map-list-card__addr">📍 ${loc.address}</p>
+                    `;
+                    card.addEventListener('click', () => selectLocation(loc.id));
+                    card.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            selectLocation(loc.id);
+                        }
+                    });
+                    container.appendChild(card);
+                });
+            }
+
+            syncMarkers(list);
+            renderFallbackPins(list);
+        }
+
+        function selectLocation(id) {
+            activeLocationId = id;
+            renderList();
+            const loc = campusLocations.find((l) => l.id === id);
+            const marker = markers.get(id);
+            if (map && marker && loc) {
+                map.panTo(marker.getPosition());
+                map.setZoom(16);
+                openInfoWindow(loc, marker);
+            }
+        }
+
+        function openInfoWindow(loc, marker) {
+            if (!infoWindow) return;
+            infoWindow.setContent(`<strong>${loc.name}</strong><br>${loc.address}`);
+            infoWindow.open(map, marker);
+        }
+
+        function selectCategory(btn, cat) {
+            document.querySelectorAll('#map-category-pills .pill-btn').forEach((b) => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeCategory = cat;
+            activeLocationId = null;
+            renderList();
+        }
+
+        function syncMarkers(visibleList) {
+            if (!map) return;
+            const visibleIds = new Set(visibleList.map((l) => l.id));
+            markers.forEach((marker, id) => {
+                marker.setMap(visibleIds.has(id) ? map : null);
+            });
+        }
+
+        // --- Direct DOM mounting ---------------------------------------
+        // The vanilla-JS equivalent of the React build's `useRef` +
+        // `new google.maps.Map(...)` pattern: grab the real DOM node with
+        // getElementById and hand it straight to the Maps constructor.
+        // Called by Google's loader itself via `&callback=initBridgeMap`
+        // below, which avoids the "Map is not a constructor" race
+        // condition you get from calling `new google.maps.Map()` before
+        // the SDK has actually finished attaching itself to `window.google`.
+        function initBridgeMap() {
+            const mapNode = document.getElementById('map-canvas');
+            if (!mapNode) return;
+
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            map = new google.maps.Map(mapNode, {
+                center: CAMPUS_CENTER,
+                zoom: 14,
+                disableDefaultUI: true,
+                zoomControl: true,
+                styles: currentTheme === 'dark' ? MAP_STYLE_DARK : MAP_STYLE_LIGHT
+            });
+            infoWindow = new google.maps.InfoWindow();
+
+            campusLocations.forEach((loc) => {
+                const meta = CATEGORY_META[loc.category];
+                const marker = new google.maps.Marker({
+                    position: { lat: loc.lat, lng: loc.lng },
+                    map: map,
+                    title: loc.name,
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 8,
+                        fillColor: meta.hex,
+                        fillOpacity: 1,
+                        strokeColor: '#ffffff',
+                        strokeWeight: 2
+                    }
+                });
+                marker.addListener('click', () => selectLocation(loc.id));
+                markers.set(loc.id, marker);
+            });
+
+            document.getElementById('map-loading').style.display = 'none';
+            renderList();
+        }
+
+        // Re-skin the live map when the theme toggle flips (script.js calls
+        // this global hook after applying the new theme).
+        window.onBridgeThemeChange = function (theme) {
+            if (map) {
+                map.setOptions({ styles: theme === 'dark' ? MAP_STYLE_DARK : MAP_STYLE_LIGHT });
+            }
+        };
+
+        // --- Fallback: no API key configured yet ------------------------
+        function renderFallbackPins(list) {
+            const fallback = document.getElementById('map-fallback');
+            if (fallback.style.display !== 'block') return;
+
+            const lats = campusLocations.map((l) => l.lat);
+            const lngs = campusLocations.map((l) => l.lng);
+            const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+            const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+            const latSpan = (maxLat - minLat) || 1;
+            const lngSpan = (maxLng - minLng) || 1;
+
+            fallback.innerHTML = '<div class="map-fallback-notice"><strong>Live map preview</strong>Add a key to <code>window.BRIDGE_MAPS_API_KEY</code> in <code>map-config.js</code> to load the real Google Map. Pins are positioned to scale in the meantime.</div>';
+
+            list.forEach((loc) => {
+                const meta = CATEGORY_META[loc.category];
+                const x = ((loc.lng - minLng) / lngSpan) * 80 + 10;
+                const y = (1 - (loc.lat - minLat) / latSpan) * 80 + 10;
+                const pin = document.createElement('button');
+                pin.type = 'button';
+                pin.className = 'map-fallback-pin';
+                pin.title = loc.name;
+                pin.style.left = x + '%';
+                pin.style.top = y + '%';
+                pin.style.background = meta.hex;
+                pin.addEventListener('click', () => selectLocation(loc.id));
+                fallback.appendChild(pin);
+            });
+        }
+
+        // --- Load the SDK -------------------------------------------------
+        renderList(); // populate the sidebar immediately, independent of map load status
+
+        (function loadGoogleMaps() {
+            const key = window.BRIDGE_MAPS_API_KEY;
+            if (!key) {
+                document.getElementById('map-loading').style.display = 'none';
+                document.getElementById('map-fallback').style.display = 'block';
+                renderList();
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&callback=initBridgeMap`;
+            script.async = true;
+            script.defer = true;
+            script.onerror = function () {
+                document.getElementById('map-loading').style.display = 'none';
+                document.getElementById('map-fallback').style.display = 'block';
+                renderList();
+            };
+            document.head.appendChild(script);
+        })();
+    </script>
+</body>
+</html>

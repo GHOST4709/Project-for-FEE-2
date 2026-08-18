@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bridge — Log in</title>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            // Already signed in? Skip the gate and go straight to the dashboard.
+            if (localStorage.getItem('bridge_logged_in') === 'true') {
+                window.location.replace('dashboard.html');
+            }
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="rail" aria-hidden="true"></div>
+
+    <header class="site-header">
+        <a href="index.html" class="brand">
+            <span class="brand-mark">⚡</span>
+            <span class="brand-word">BRIDGE<em>.</em></span>
+        </a>
+        <div class="user-menu">
+            <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode">
+                <span id="theme-icon">🌙</span>
+                <span id="theme-label">Dark</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="auth-shell">
+        <div class="ticket auth-card">
+            <div class="ticket-top">
+                <p class="section-eyebrow">CAMPUS PASS</p>
+                <h2 id="auth-heading">Welcome back</h2>
+                <p class="ticket-sub" id="auth-subheading">Log in to reach your dashboard.</p>
+            </div>
+
+            <div class="carpool-tabs auth-tabs" role="tablist">
+                <button type="button" class="tab-btn active" id="tab-login" onclick="switchAuthTab('login')">Log in</button>
+                <button type="button" class="tab-btn" id="tab-signup" onclick="switchAuthTab('signup')">Create account</button>
+            </div>
+
+            <form id="login-form" class="auth-form">
+                <div class="field">
+                    <label for="login-email">University Email</label>
+                    <input type="email" id="login-email" placeholder="alex@university.edu" required>
+                </div>
+                <div class="field">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Log in</button>
+            </form>
+
+            <form id="signup-form" class="auth-form" style="display: none;">
+                <div class="field">
+                    <label for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" placeholder="Alex Rivera" required>
+                </div>
+                <div class="field">
+                    <label for="signup-email">University Email</label>
+                    <input type="email" id="signup-email" placeholder="alex@university.edu" required>
+                </div>
+                <div class="field">
+                    <label for="signup-college">College / University Name</label>
+                    <input type="text" id="signup-college" placeholder="e.g. Stanford University" required>
+                </div>
+                <div class="field">
+                    <label for="signup-password">Create Password</label>
+                    <input type="password" id="signup-password" placeholder="At least 6 characters" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Create free account</button>
+            </form>
+
+            <div class="auth-divider"><span>or</span></div>
+            <button type="button" class="btn btn-ghost btn-full" id="guest-btn">Continue as guest</button>
+
+            <p class="form-note" id="auth-switch-note">
+                New to Bridge? <a href="#" class="auth-header-link" onclick="switchAuthTab('signup'); return false;">Create a free account</a>
+            </p>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>© 2026 Bridge. Made for campus life.</p>
+        <p><a href="index.html">← Back to Main Site</a></p>
+    </footer>
+
+    <div id="toast" class="toast">Theme updated!</div>
+    <script src="script.js"></script>
+    <script>
+        // Mock "database": every signed-up account lives in this localStorage
+        // array. There's no backend in this build, so passwords are compared
+        // in plain text — fine for a class project demo, never for production.
+        function getUsers() {
+            try {
+                return JSON.parse(localStorage.getItem('bridge_users') || '[]');
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem('bridge_users', JSON.stringify(users));
+        }
+
+        function startSession(user) {
+            localStorage.setItem('bridge_logged_in', 'true');
+            localStorage.setItem('bridge_user_name', user.name);
+            localStorage.setItem('bridge_user_email', user.email);
+            localStorage.setItem('bridge_user_college', user.college || 'Main Campus');
+        }
+
+        function switchAuthTab(tab) {
+            const loginTab = document.getElementById('tab-login');
+            const signupTab = document.getElementById('tab-signup');
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const heading = document.getElementById('auth-heading');
+            const sub = document.getElementById('auth-subheading');
+            const switchNote = document.getElementById('auth-switch-note');
+
+            if (tab === 'signup') {
+                signupTab.classList.add('active');
+                loginTab.classList.remove('active');
+                signupForm.style.display = 'flex';
+                loginForm.style.display = 'none';
+                heading.textContent = 'Create your pass';
+                sub.textContent = 'Free forever for verified students.';
+                switchNote.innerHTML = 'Already have an account? <a href="#" class="auth-header-link" onclick="switchAuthTab(\'login\'); return false;">Log in</a>';
+            } else {
+                loginTab.classList.add('active');
+                signupTab.classList.remove('active');
+                loginForm.style.display = 'flex';
+                signupForm.style.display = 'none';
+                heading.textContent = 'Welcome back';
+                sub.textContent = 'Log in to reach your dashboard.';
+                switchNote.innerHTML = 'New to Bridge? <a href="#" class="auth-header-link" onclick="switchAuthTab(\'signup\'); return false;">Create a free account</a>';
+            }
+        }
+
+        document.getElementById('login-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim().toLowerCase();
+            const password = document.getElementById('login-password').value;
+            const match = getUsers().find((u) => u.email.toLowerCase() === email);
+
+            if (!match) {
+                showToast('No account with that email — try creating one');
+                switchAuthTab('signup');
+                document.getElementById('signup-email').value = email;
+                return;
+            }
+            if (match.password !== password) {
+                showToast('Incorrect password. Try again.');
+                return;
+            }
+
+            startSession(match);
+            showToast(`Welcome back, ${match.name.split(' ')[0]}!`);
+            setTimeout(() => { window.location.href = 'dashboard.html'; }, 700);
+        });
+
+        document.getElementById('signup-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim().toLowerCase();
+            const college = document.getElementById('signup-college').value.trim();
+            const password = document.getElementById('signup-password').value;
+
+            const users = getUsers();
+            if (users.some((u) => u.email.toLowerCase() === email)) {
+                showToast('An account already exists for that email — log in instead');
+                switchAuthTab('login');
+                document.getElementById('login-email').value = email;
+                return;
+            }
+
+            const newUser = { name, email, college, password };
+            users.push(newUser);
+            saveUsers(users);
+            startSession(newUser);
+            showToast('Account created! Redirecting...');
+            setTimeout(() => { window.location.href = 'dashboard.html'; }, 700);
+        });
+
+        document.getElementById('guest-btn').addEventListener('click', function () {
+            startSession({ name: 'Alex Rivera', email: 'guest@bridge.app', college: 'Main Campus' });
+            showToast('Continuing as guest...');
+            setTimeout(() => { window.location.href = 'dashboard.html'; }, 500);
+        });
+
+        // Deep-link support: index.html's "Join Free" CTA links here with
+        // ?tab=signup so visitors land straight on the create-account form.
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('tab') === 'signup') {
+            switchAuthTab('signup');
+        }
+    </script>
+</body>
+</html>
