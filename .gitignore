@@ -1,3 +1,4 @@
 # The Rest of the main .env's and other file are in Frontend .gitignore, these files are Just Extra Stuff.
 RawStuff
 
+**/map-config.js
