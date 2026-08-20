@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bridge — Rooms & PG</title>
     <script>
         (function() {
-            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            const savedTheme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme);
             if (localStorage.getItem('bridge_logged_in') !== 'true') {
                 window.location.replace('login.html');
@@ -26,12 +26,18 @@
             <span class="brand-mark">⚡</span>
             <span class="brand-word">BRIDGE<em>.</em></span>
         </a>
+        <nav class="app-nav" aria-label="Primary">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="dashboard.html#explore-campus" class="active">Explore</a>
+            <a href="map.html">Map</a>
+            <a href="dashboard.html#explore-campus" class="active">Services</a>
+        </nav>
         <div class="user-menu">
-            <a href="dashboard.html" class="btn btn-ghost btn-sm">← Back to Dashboard</a>
             <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode">
-                <span id="theme-icon">🌙</span>
-                <span id="theme-label">Dark</span>
+                <span id="theme-icon">☀️</span>
+                <span id="theme-label">Light</span>
             </button>
+            <button class="icon-btn" onclick="window.location.href='dashboard.html#campus-updates'" aria-label="Notifications" title="Notifications">🔔</button>
             <div class="user-badge" id="user-badge" title="Alex Rivera">AR</div>
             <button id="logout-btn" class="btn btn-ghost btn-sm">Log out</button>
         </div>

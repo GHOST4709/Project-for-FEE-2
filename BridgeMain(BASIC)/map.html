@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bridge — Campus Map</title>
     <script>
         (function() {
-            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            const savedTheme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme);
             if (localStorage.getItem('bridge_logged_in') !== 'true') {
                 window.location.replace('login.html');
@@ -26,12 +26,18 @@
             <span class="brand-mark">⚡</span>
             <span class="brand-word">BRIDGE<em>.</em></span>
         </a>
+        <nav class="app-nav" aria-label="Primary">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="dashboard.html#explore-campus">Explore</a>
+            <a href="map.html" class="active">Map</a>
+            <a href="dashboard.html#explore-campus">Services</a>
+        </nav>
         <div class="user-menu">
-            <a href="dashboard.html" class="btn btn-ghost btn-sm">← Back to Dashboard</a>
             <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode">
-                <span id="theme-icon">🌙</span>
-                <span id="theme-label">Dark</span>
+                <span id="theme-icon">☀️</span>
+                <span id="theme-label">Light</span>
             </button>
+            <button class="icon-btn" onclick="window.location.href='dashboard.html#campus-updates'" aria-label="Notifications" title="Notifications">🔔</button>
             <div class="user-badge" id="user-badge" title="Alex Rivera">AR</div>
             <button id="logout-btn" class="btn btn-ghost btn-sm">Log out</button>
         </div>
@@ -335,6 +341,27 @@
                 fallback.appendChild(pin);
             });
         }
+
+        // --- Deep-link support: dashboard.html's Explore/Around Me cards
+        // link here with ?category=carpool (etc.) and/or ?q=search+term so
+        // visitors land on a pre-filtered view instead of the unfiltered map.
+        (function applyDeepLinkParams() {
+            const params = new URLSearchParams(window.location.search);
+            const category = params.get('category');
+            const query = params.get('q');
+
+            if (category && CATEGORY_META[category]) {
+                activeCategory = category;
+                const pill = document.querySelector(`#map-category-pills .pill-btn[data-cat="${category}"]`);
+                if (pill) {
+                    document.querySelectorAll('#map-category-pills .pill-btn').forEach((b) => b.classList.remove('active'));
+                    pill.classList.add('active');
+                }
+            }
+            if (query) {
+                document.getElementById('map-search').value = query;
+            }
+        })();
 
         // --- Load the SDK -------------------------------------------------
         renderList(); // populate the sidebar immediately, independent of map load status

@@ -1,15 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bridge — Student Dashboard</title>
+    <title>Bridge — Dashboard</title>
     <script>
         (function() {
-            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            const savedTheme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme);
-            // Auth guard: no session, no dashboard. Runs before paint so
-            // there's no flash of protected content for a logged-out visitor.
             if (localStorage.getItem('bridge_logged_in') !== 'true') {
                 window.location.replace('login.html');
             }
@@ -28,176 +26,205 @@
             <span class="brand-mark">⚡</span>
             <span class="brand-word">BRIDGE<em>.</em></span>
         </a>
+        <nav class="app-nav" aria-label="Primary">
+            <a href="dashboard.html" class="active">Dashboard</a>
+            <a href="#explore-campus">Explore</a>
+            <a href="map.html">Map</a>
+            <a href="#explore-campus">Services</a>
+        </nav>
         <div class="user-menu">
             <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode">
-                <span id="theme-icon">🌙</span>
-                <span id="theme-label">Dark</span>
+                <span id="theme-icon">☀️</span>
+                <span id="theme-label">Light</span>
             </button>
+            <button id="bell-btn" class="icon-btn" aria-label="Notifications" title="Notifications">🔔</button>
             <div class="user-badge" id="user-badge" title="Alex Rivera">AR</div>
             <button id="logout-btn" class="btn btn-ghost btn-sm">Log out</button>
         </div>
     </header>
 
     <main>
-        <section class="dash-hero">
-            <div>
-                <p class="section-eyebrow">VERIFIED STUDENT HUB</p>
-                <h1>Welcome back, <em id="user-name">Alex</em></h1>
-                <p class="hero-sub" id="user-campus">Main Campus • Student Pass Active</p>
-            </div>
-            <div class="status-card">
-                <div class="status-indicator"></div>
-                <div>
-                    <span class="status-title">Campus Pass Active</span>
-                    <p class="status-desc">Identity verified via email</p>
-                </div>
-            </div>
+        <section class="greeting-hero">
+            <h1 id="greeting-heading">Good morning, <em id="user-name">Student</em> 👋</h1>
+            <p class="hero-sub">Everything you need around campus, in one place.</p>
+
+            <form class="greeting-search" id="dash-search-form">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="dash-search" placeholder="Search for places, services, rides, rooms...">
+                <span class="location-pill">📍 <span id="user-campus-short">Your Campus</span></span>
+            </form>
         </section>
 
-        <section id="services-grid" class="dash-section alt-bg">
+        <section id="explore-campus" class="dash-section">
             <p class="eyebrow">STUDENT SERVICES</p>
-            <h2>What do you need today?</h2>
-            <div class="services-grid">
-                <a href="map.html" class="service-card" style="text-decoration: none;">
-                    <span class="service-icon">🗺️</span>
+            <h2>Explore Campus</h2>
+
+            <div class="explore-grid">
+                <a href="carpool.html" class="explore-card explore-card--large">
+                    <span class="explore-card__pill">12 rides nearby</span>
+                    <div class="explore-card__bg" aria-hidden="true">
+                        <svg viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M-20 210 C 60 170, 100 230, 180 180 S 320 120, 440 150" stroke="var(--teal)" stroke-width="3" fill="none" opacity="0.6"/>
+                            <path d="M-20 90 C 80 60, 140 130, 240 80 S 360 20, 440 60" stroke="var(--ink-soft)" stroke-width="2" fill="none" opacity="0.4"/>
+                            <circle cx="80" cy="190" r="5" fill="var(--teal)"/>
+                            <circle cx="220" cy="150" r="5" fill="var(--teal)"/>
+                            <circle cx="340" cy="90" r="5" fill="var(--ink-soft)"/>
+                        </svg>
+                    </div>
+                    <span class="icon-badge icon-badge--orange">🚗</span>
+                    <h3>Carpool</h3>
+                    <p>Find a ride or share your journey with students.</p>
+                    <span class="btn btn-primary btn-sm">Find a Ride</span>
+                </a>
+
+                <a href="map.html" class="explore-card explore-card--map">
+                    <span class="icon-badge icon-badge--indigo">🗺️</span>
                     <h3>Campus Map</h3>
-                    <p>Every service below, pinned on one live map.</p>
-                    <span class="badge badge-teal">Live Now</span>
+                    <p>Find classrooms, cafes, hostels and services.</p>
+                    <div class="explore-card__map-thumb" aria-hidden="true">
+                        <svg viewBox="0 0 300 140" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="300" height="140" fill="var(--alt-bg)"/>
+                            <rect x="0" y="95" width="300" height="10" fill="var(--line)"/>
+                            <rect x="140" y="0" width="10" height="140" fill="var(--line)"/>
+                            <rect x="30" y="25" width="55" height="45" rx="4" fill="var(--icon-peach)" opacity="0.85"/>
+                            <rect x="100" y="15" width="35" height="65" rx="4" fill="var(--teal)" opacity="0.8"/>
+                            <rect x="175" y="30" width="50" height="55" rx="4" fill="var(--icon-cyan)" opacity="0.8"/>
+                            <rect x="240" y="15" width="40" height="70" rx="4" fill="var(--icon-indigo)" opacity="0.75"/>
+                            <circle cx="55" cy="118" r="10" fill="var(--icon-lavender)" opacity="0.6"/>
+                            <circle cx="255" cy="115" r="14" fill="var(--icon-lavender)" opacity="0.5"/>
+                        </svg>
+                    </div>
+                    <span class="btn btn-ghost btn-sm">Open Map</span>
                 </a>
-                <a href="carpool.html" class="service-card" style="text-decoration: none;">
-                    <span class="service-icon">🚗</span>
-                    <h3>Campus Carpool</h3>
-                    <p>Find or offer rides to lectures and city spots.</p>
-                    <span class="badge badge-teal">14 Active Rides</span>
+
+                <a href="fix.html" class="explore-card">
+                    <span class="explore-card__pill">5 nearby</span>
+                    <span class="icon-badge icon-badge--cyan">🔧</span>
+                    <h3>Tech Fix</h3>
+                    <p>Find trusted tech repair and support near campus.</p>
+                    <span class="btn btn-ghost btn-sm">Find a Technician</span>
                 </a>
-                <a href="rooms.html" class="service-card" style="text-decoration: none;">
-                    <span class="service-icon">🏠</span>
-                    <h3>Rooms & PG</h3>
-                    <p>Verified housing and roommate matching.</p>
-                    <span class="badge badge-amber">8 New Listings</span>
+
+                <a href="rooms.html" class="explore-card">
+                    <span class="explore-card__pill">24 listings</span>
+                    <span class="icon-badge icon-badge--peach">🛏️</span>
+                    <h3>PG &amp; Rooms</h3>
+                    <p>Discover student-friendly rooms and PGs.</p>
+                    <span class="btn btn-ghost btn-sm">Explore Rooms</span>
                 </a>
-                <a href="thrift.html" class="service-card" style="text-decoration: none;">
-                    <span class="service-icon">📚</span>
+
+                <a href="thrift.html" class="explore-card">
+                    <span class="explore-card__pill">18 listings</span>
+                    <span class="icon-badge icon-badge--lavender">🛍️</span>
                     <h3>Campus Thrift</h3>
-                    <p>Buy & sell textbooks, lab coats, and tech.</p>
-                    <span class="badge badge-teal">32 Items</span>
-                </a>
-                <a href="fix.html" class="service-card" style="text-decoration: none;">
-                    <span class="service-icon">💻</span>
-                    <h3>Express Tech Fix</h3>
-                    <p>Peer laptop and smartphone diagnostics.</p>
-                    <span class="badge badge-amber">Open Tech Lab</span>
+                    <p>Buy and sell textbooks, gear, and student favourites.</p>
+                    <span class="btn btn-ghost btn-sm">Explore Thrift</span>
                 </a>
             </div>
         </section>
 
-        <section id="carpool" class="dash-section">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;">
-                <div>
-                    <p class="eyebrow">01 / RIDES</p>
-                    <h2>Campus Carpool</h2>
-                    <p>Active routes connecting your college campus and downtown hubs.</p>
-                </div>
-                <a href="carpool.html" class="btn btn-primary btn-sm">Launch Carpool Hub →</a>
+        <section class="dash-section alt-bg">
+            <div class="around-me-head">
+                <h2 style="margin:0;">Around Me</h2>
+                <a href="map.html">View All on Map →</a>
             </div>
-        </section>
-
-        <section id="campus-map" class="dash-section alt-bg">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;">
-                <div>
-                    <p class="eyebrow">00 / LIVE MAP</p>
-                    <h2>Campus Map</h2>
-                    <p>Carpool pickups, PGs, thrift exchange points, and repair shops — all pinned and searchable.</p>
-                </div>
-                <a href="map.html" class="btn btn-primary btn-sm">Open Campus Map →</a>
-            </div>
-        </section>
-
-        <section id="rooms" class="dash-section alt-bg">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;">
-                <div>
-                    <p class="eyebrow">02 / HOUSING</p>
-                    <h2>Verified Rooms & PG</h2>
-                    <p>Safe housing options listed and verified by campus peers.</p>
-                </div>
-                <a href="rooms.html" class="btn btn-primary btn-sm">Explore Rooms & PG →</a>
-            </div>
-        </section>
-
-        <section id="thrift" class="dash-section">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;">
-                <div>
-                    <p class="eyebrow">03 / MARKETPLACE</p>
-                    <h2>Campus Thrift</h2>
-                    <p>Peer-to-peer student marketplace for textbooks, supplies, and gear.</p>
-                </div>
-                <a href="thrift.html" class="btn btn-primary btn-sm">Explore Marketplace →</a>
-            </div>
-        </section>
-
-        <section id="fix" class="dash-section alt-bg">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;">
-                <div>
-                    <p class="eyebrow">04 / SUPPORT</p>
-                    <h2>Express Tech Fix</h2>
-                    <p>Schedule a diagnostic check with on-campus tech experts.</p>
-                </div>
-                <a href="fix.html" class="btn btn-primary btn-sm">Find Tech Repair →</a>
-            </div>
-        </section>
-
-        <section id="events" class="dash-section">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;">
-                <div>
-                    <p class="eyebrow">THIS WEEK ON CAMPUS</p>
-                    <h2>Upcoming Events</h2>
-                </div>
-                <a href="#events" class="btn btn-ghost btn-sm">Full Calendar →</a>
-            </div>
-            <div class="events-grid">
-                <article class="event-card">
-                    <div class="event-date">
-                        <span class="date-num">18</span>
-                        <span class="date-month">AUG</span>
+            <div class="around-me-grid">
+                <a href="map.html?category=carpool" class="around-me-card">
+                    <span class="icon-badge icon-badge--sm icon-badge--orange">🚗</span>
+                    <div>
+                        <h4>Carpool</h4>
+                        <p class="meta">4 nearby • 200m</p>
                     </div>
-                    <div class="event-details">
-                        <span class="badge badge-amber">Hackathon</span>
-                        <h3>48-Hour Campus AI Build</h3>
-                        <p>Science Block B • Lab 302 • 10:00 AM</p>
+                </a>
+                <a href="map.html?category=fix" class="around-me-card">
+                    <span class="icon-badge icon-badge--sm icon-badge--cyan">🔧</span>
+                    <div>
+                        <h4>Tech Fix</h4>
+                        <p class="meta">2 nearby • 450m</p>
                     </div>
-                    <button class="btn btn-ghost btn-sm rsvp-btn">RSVP</button>
-                </article>
-                <article class="event-card">
-                    <div class="event-date">
-                        <span class="date-num">22</span>
-                        <span class="date-month">AUG</span>
+                </a>
+                <a href="map.html?category=thrift" class="around-me-card">
+                    <span class="icon-badge icon-badge--sm icon-badge--maroon">🛍️</span>
+                    <div>
+                        <h4>Thrift Exchange</h4>
+                        <p class="meta">3 nearby • 300m</p>
                     </div>
-                    <div class="event-details">
-                        <span class="badge badge-teal">Social</span>
-                        <h3>Freshers Welcome Night</h3>
-                        <p>Student Center Lawn • 6:30 PM</p>
+                </a>
+                <a href="map.html?category=rooms" class="around-me-card">
+                    <span class="icon-badge icon-badge--sm icon-badge--peach">🛏️</span>
+                    <div>
+                        <h4>PG / Rooms</h4>
+                        <p class="meta">8 listings • 600m</p>
                     </div>
-                    <button class="btn btn-ghost btn-sm rsvp-btn">RSVP</button>
-                </article>
+                </a>
             </div>
         </section>
 
-        <section id="announcements" class="dash-section alt-bg">
-            <p class="eyebrow">CAMPUS FEED</p>
-            <h2>Latest Announcements</h2>
-            <div class="announcements-list">
-                <article class="notice-card">
-                    <span class="notice-tag">LIBRARY DEPT</span>
-                    <h4>Extended Hours for Midterms</h4>
-                    <p>Central library will remain open 24/7 starting next Monday through exam week.</p>
-                    <span class="notice-time">Posted 2h ago</span>
-                </article>
-                <article class="notice-card">
-                    <span class="notice-tag">PARKING & TRANSPORT</span>
-                    <h4>North Gate Shuttle Schedule Update</h4>
-                    <p>Shuttle frequency increased to every 10 minutes during peak morning hours (8-10 AM).</p>
-                    <span class="notice-time">Posted 5h ago</span>
-                </article>
+        <section class="dash-section">
+            <div class="dash-columns">
+                <div class="panel">
+                    <div class="panel-head">
+                        <h2>Upcoming Events</h2>
+                        <a href="#upcoming-events">View All Events →</a>
+                    </div>
+                    <div id="upcoming-events">
+                        <div class="event-list-item">
+                            <div class="event-date-badge is-featured">
+                                <span class="day">24</span>
+                                <span class="mon">Aug</span>
+                            </div>
+                            <div>
+                                <h4>AI &amp; ML Hackathon</h4>
+                                <p class="meta"><span>🕐 10:00 AM</span><span>📍 Innovation Lab</span></p>
+                            </div>
+                        </div>
+                        <div class="event-list-item">
+                            <div class="event-date-badge">
+                                <span class="day">28</span>
+                                <span class="mon">Aug</span>
+                            </div>
+                            <div>
+                                <h4>Cultural Night</h4>
+                                <p class="meta"><span>🕐 6:30 PM</span><span>📍 Main Auditorium</span></p>
+                            </div>
+                        </div>
+                        <div class="event-list-item">
+                            <div class="event-date-badge">
+                                <span class="day">30</span>
+                                <span class="mon">Aug</span>
+                            </div>
+                            <div>
+                                <h4>Frontend Workshop</h4>
+                                <p class="meta"><span>🕐 2:00 PM</span><span>📍 Computer Block</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <h2>Campus Updates</h2>
+                        <a href="#campus-updates">View All →</a>
+                    </div>
+                    <div id="campus-updates">
+                        <div class="update-list-item">
+                            <span class="icon">📣</span>
+                            <span>Hackathon registrations open</span>
+                        </div>
+                        <div class="update-list-item">
+                            <span class="icon">🗓️</span>
+                            <span>Mid-semester schedule released</span>
+                        </div>
+                        <div class="update-list-item">
+                            <span class="icon">👥</span>
+                            <span>New student club registrations</span>
+                        </div>
+                        <div class="update-list-item">
+                            <span class="icon">🚌</span>
+                            <span>Updated campus shuttle timings</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
@@ -209,5 +236,35 @@
 
     <div id="toast" class="toast">Theme updated!</div>
     <script src="script.js"></script>
+    <script>
+        (function () {
+            const hour = new Date().getHours();
+            const heading = document.getElementById('greeting-heading');
+            const label = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+            if (heading) {
+                heading.innerHTML = `${label}, <em id="user-name">Student</em> 👋`;
+                const storedName = localStorage.getItem('bridge_user_name');
+                if (storedName) {
+                    document.getElementById('user-name').textContent = storedName.trim().split(' ')[0];
+                }
+            }
+            const storedCollege = localStorage.getItem('bridge_user_college');
+            const campusShort = document.getElementById('user-campus-short');
+            if (campusShort && storedCollege) {
+                campusShort.textContent = storedCollege;
+            }
+        })();
+
+        document.getElementById('dash-search-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const q = document.getElementById('dash-search').value.trim();
+            window.location.href = q ? `map.html?q=${encodeURIComponent(q)}` : 'map.html';
+        });
+
+        document.getElementById('bell-btn').addEventListener('click', function () {
+            document.getElementById('campus-updates').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            showToast('You are all caught up — see Campus Updates below');
+        });
+    </script>
 </body>
 </html>
