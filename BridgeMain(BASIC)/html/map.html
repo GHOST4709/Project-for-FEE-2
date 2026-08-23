@@ -16,7 +16,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
     <div class="rail" aria-hidden="true"></div>
@@ -94,8 +94,8 @@
     </footer>
 
     <div id="toast" class="toast">Theme updated!</div>
-    <script src="script.js"></script>
-    <script src="map-config.js"></script>
+    <script src="../js/script.js"></script>
+    <script src="../js/map-config.js"></script>
     <script>
         // Fictional "Bridge University" campus, placed near the real
         // Chandigarh / Mohali locations that carpool.html already
@@ -239,7 +239,16 @@
 
         function openInfoWindow(loc, marker) {
             if (!infoWindow) return;
-            infoWindow.setContent(`<strong>${loc.name}</strong><br>${loc.address}`);
+            // Fixed, theme-independent colors on purpose: Google renders this
+            // content inside its own white InfoWindow chrome regardless of
+            // our site's data-theme, so inheriting var(--ink) made the text
+            // turn near-white-on-white (invisible) in dark mode.
+            infoWindow.setContent(`
+                <div style="font-family: 'Space Grotesk', -apple-system, sans-serif; min-width: 160px; padding: 2px 0;">
+                    <strong style="display: block; font-size: 13px; color: #0f172a; margin-bottom: 3px;">${loc.name}</strong>
+                    <span style="font-size: 12px; color: #64748b;">${loc.address}</span>
+                </div>
+            `);
             infoWindow.open(map, marker);
         }
 
