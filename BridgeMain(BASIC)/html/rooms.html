@@ -99,6 +99,7 @@
         const roomsDatabase = [
             {
                 id: 1,
+                mapId: "r1",
                 title: "Student Haven PG",
                 image: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=600&q=80",
                 rating: 4.8,
@@ -110,6 +111,7 @@
             },
             {
                 id: 2,
+                mapId: "r2",
                 title: "Elite Scholars Residence",
                 image: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=600&q=80",
                 rating: 4.5,
@@ -121,6 +123,7 @@
             },
             {
                 id: 3,
+                mapId: "r3",
                 title: "Campus View Hostel",
                 image: "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=600&q=80",
                 rating: 4.2,
@@ -177,7 +180,7 @@
 
                         <div class="room-footer-row">
                             <span class="badge badge-amber">${room.sharingTag}</span>
-                            <button class="btn btn-ghost btn-sm" onclick="showToast('Contacting ${room.title} owner...')">View Details</button>
+                            <button class="btn btn-ghost btn-sm" onclick="window.location.href='map.html?location=${room.mapId}'">View Details</button>
                         </div>
                     </div>
                 `;

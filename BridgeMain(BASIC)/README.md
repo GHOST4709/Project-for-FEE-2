@@ -1,5 +1,7 @@
 # Bridge — Project Structure
 
+Files are grouped by type. No filenames were changed — only their location.
+
 ```
 BridgeMain(BASIC)/
 ├── html/
@@ -57,4 +59,10 @@ The first rule sends your domain root to the landing page. The second
 means a direct link or bookmark to `/dashboard.html` (no `html/` prefix)
 still resolves correctly, in case anyone types or shares a bare URL.
 
+## Google Maps API key
+
+Unchanged — still set in `js/map-config.js`:
+
+```js
+window.BRIDGE_MAPS_API_KEY = 'your_key_here';
 ```

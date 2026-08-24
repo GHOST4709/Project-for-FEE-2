@@ -311,6 +311,15 @@
 
             document.getElementById('map-loading').style.display = 'none';
             renderList();
+
+            // A ?location= deep link needs the real marker to exist before
+            // we can pan to it and open its InfoWindow — that's only true
+            // from this point on, hence doing it here rather than up in
+            // applyDeepLinkParams().
+            if (pendingLocationId) {
+                selectLocation(pendingLocationId);
+                pendingLocationId = null;
+            }
         }
 
         // Re-skin the live map when the theme toggle flips (script.js calls
@@ -351,17 +360,28 @@
             });
         }
 
-        // --- Deep-link support: dashboard.html's Explore/Around Me cards
-        // link here with ?category=carpool (etc.) and/or ?q=search+term so
-        // visitors land on a pre-filtered view instead of the unfiltered map.
+        // --- Deep-link support: dashboard.html's Explore/Around Me cards,
+        // and each service page's "View Details" button, link here with
+        // ?category=carpool and/or ?location=f1 (a specific pin's id) so
+        // visitors land on a pre-filtered, pre-selected view instead of
+        // the unfiltered map.
+        let pendingLocationId = null;
+
         (function applyDeepLinkParams() {
             const params = new URLSearchParams(window.location.search);
             const category = params.get('category');
             const query = params.get('q');
+            const location = params.get('location');
 
-            if (category && CATEGORY_META[category]) {
-                activeCategory = category;
-                const pill = document.querySelector(`#map-category-pills .pill-btn[data-cat="${category}"]`);
+            // A specific location implies its own category — that takes
+            // priority over a separately-passed ?category, and guarantees
+            // the pin isn't filtered out before we can select it.
+            const targetLocation = location ? campusLocations.find((l) => l.id === location) : null;
+            const resolvedCategory = targetLocation ? targetLocation.category : category;
+
+            if (resolvedCategory && CATEGORY_META[resolvedCategory]) {
+                activeCategory = resolvedCategory;
+                const pill = document.querySelector(`#map-category-pills .pill-btn[data-cat="${resolvedCategory}"]`);
                 if (pill) {
                     document.querySelectorAll('#map-category-pills .pill-btn').forEach((b) => b.classList.remove('active'));
                     pill.classList.add('active');
@@ -370,10 +390,23 @@
             if (query) {
                 document.getElementById('map-search').value = query;
             }
+            if (targetLocation) {
+                activeLocationId = targetLocation.id;
+                pendingLocationId = targetLocation.id;
+            }
         })();
 
         // --- Load the SDK -------------------------------------------------
         renderList(); // populate the sidebar immediately, independent of map load status
+
+        // If we arrived via ?location=, scroll its (already-highlighted)
+        // card into view right away, before we know whether a live map
+        // will load — initBridgeMap() below handles the actual pan +
+        // InfoWindow once/if the real map is ready.
+        if (pendingLocationId) {
+            const activeCard = document.querySelector('.map-list-card.is-active');
+            if (activeCard) activeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
 
         (function loadGoogleMaps() {
             const key = window.BRIDGE_MAPS_API_KEY;
