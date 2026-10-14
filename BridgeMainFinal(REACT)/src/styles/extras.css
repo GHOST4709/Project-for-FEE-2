@@ -1,0 +1,150 @@
+/* ==========================================================================
+   extras.css
+   Styles for the NEW UI states introduced by the React version only
+   (validation errors, loading spinner, modal, pagination, owner actions).
+   styles.css is the untouched original stylesheet; nothing here overrides it,
+   so every original screen renders exactly as before.
+   ========================================================================== */
+
+/* --- Form validation ---
+   The message is positioned inside the field's existing 18px bottom margin, so
+   showing/hiding an error NEVER moves anything below it. That matters: errors
+   appear on blur, and a layout shift at that moment would push the Submit button
+   out from under the pointer and swallow the click. */
+.field {
+    position: relative;
+}
+
+.field-error {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 2px 0 0;
+    font-size: 12px;
+    line-height: 14px;
+    font-weight: 500;
+    color: var(--rose);
+}
+
+.field input.is-invalid,
+.field select.is-invalid {
+    border-color: var(--rose);
+}
+
+/* --- Loading states --- */
+.spinner {
+    display: block;
+    width: 30px;
+    height: 30px;
+    margin: 0 auto 14px;
+    border: 3px solid var(--line);
+    border-top-color: var(--teal);
+    border-radius: 50%;
+    animation: bridge-spin 0.8s linear infinite;
+}
+
+@keyframes bridge-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* A list that is being refreshed in the background (e.g. while typing in search). */
+.is-refreshing {
+    opacity: 0.55;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.load-more-note {
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: var(--mono);
+    font-size: 12px;
+    margin-top: 20px;
+}
+
+/* --- Pagination (hidden when there is only one page) --- */
+.pagination {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 28px;
+}
+
+.pagination .pill-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* --- Own-listing actions (edit / delete on items the user posted) --- */
+.owner-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.owner-actions .btn {
+    flex: 1;
+}
+
+.ride-owner-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.ride-owner-actions .btn {
+    flex: 1;
+}
+
+/* --- Modal --- */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(3px);
+}
+
+.modal-card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--card-bg);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: var(--hover-shadow);
+    outline: none;
+}
+
+.modal-card h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.modal-text {
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin-bottom: 22px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* --- Page shown for unknown URLs --- */
+.not-found-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+}
