@@ -1,5 +1,5 @@
 mern-google-maps/
-├── client/                     # React Frontend (Vite / CRA)
+├── client/                     # React Frontend! (Vite / CRA)
 │   ├── public/
 │   ├── src/
 │   │   ├── assets/             # Custom map marker icons, images, static assets
