@@ -9,4 +9,4 @@
  * Leave this blank and map.html still works — it falls back to a styled,
  * to-scale static preview instead of the live map.
  */
-window.BRIDGE_MAPS_API_KEY = "AIzaSyCsgr8M9YMLv4C_rph3718jBNhQyby57mo";
+window.BRIDGE_MAPS_API_KEY = "YOUR_GOOGLE_API_KEY_HERE";
